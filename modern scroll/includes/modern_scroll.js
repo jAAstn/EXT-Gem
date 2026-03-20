@@ -125,7 +125,6 @@ async function add_ms()
 	let ms_container = document.createElement("div");
 	ms_container.id = "modern_scroll";
 	ms = ms_container.attachShadow({mode: "open"});
-	document.scrollingElement.appendChild(ms_container);
 	
 	await load_prefs();
 
@@ -146,6 +145,10 @@ async function add_ms()
 	
 	add_bars();
 	add_buttons();
+
+	// DIESE ZEILE HIER NEU EINFÜGEN:
+	document.scrollingElement.appendChild(ms_container);
+
 	add_scrollingfunctions();
 	window.addEventListener("click", check_if_element_is_scrollable, false);
 	
