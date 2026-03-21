@@ -1,6 +1,7 @@
 // Globale Variablen für den schnellen Zugriff (Cache)
 let g_extensionToFolder = null;
 let g_settings = { enabled: true, specialDomains: new Set() };
+let g_domainPatterns = []; // NEU: Speichert die kompilierten Regex-Muster
 
 // Initialisierung beim Start des Service Workers
 initialize();
@@ -16,12 +17,32 @@ async function loadSettings() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(['enabled', 'specialDomains'], (data) => {
       g_settings.enabled = data.enabled !== false;
-      g_settings.specialDomains = new Set(data.specialDomains || []);
+      const domainsArray = data.specialDomains || [];
+      g_settings.specialDomains = new Set(domainsArray);
+      
+      // NEU: Patterns sofort beim Starten umwandeln
+      updateDomainPatterns(domainsArray); 
+      
       console.log("Settings geladen:", g_settings);
       resolve();
     });
   });
 }
+
+// Listener für Einstellungsänderungen
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync') {
+    if (changes.enabled) g_settings.enabled = changes.enabled.newValue;
+    if (changes.specialDomains) {
+      const newDomains = changes.specialDomains.newValue || [];
+      g_settings.specialDomains = new Set(newDomains);
+      
+      // NEU: Patterns aktualisieren, wenn der Nutzer im Popup speichert
+      updateDomainPatterns(newDomains); 
+    }
+    console.log("Einstellungen aktualisiert:", g_settings);
+  }
+});
 
 // Mapping laden
 async function loadMapping() {
@@ -34,15 +55,6 @@ async function loadMapping() {
     g_extensionToFolder = {}; // Fallback, damit es nicht crasht
   }
 }
-
-// Listener für Einstellungsänderungen (damit wir nicht neu starten müssen)
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'sync') {
-    if (changes.enabled) g_settings.enabled = changes.enabled.newValue;
-    if (changes.specialDomains) g_settings.specialDomains = new Set(changes.specialDomains.newValue || []);
-    console.log("Einstellungen aktualisiert:", g_settings);
-  }
-});
 
 // === HAUPTLOGIK ===
 chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
@@ -103,8 +115,8 @@ async function handleDownload(downloadItem, suggest) {
 function isSpecialDomain(url) {
   try {
     const hostname = new URL(url).hostname.toLowerCase();
-    // Prüfen ob einer der Domain-Teile im Set ist
-    return [...g_settings.specialDomains].some(d => hostname.includes(d));
+    // Prüfen ob ein Pattern aus unserer Regex-Liste auf den Hostnamen passt
+    return g_domainPatterns.some(regex => regex.test(hostname));
   } catch (e) {
     console.warn("URL Parsing Fehler:", e);
     return false;
@@ -140,4 +152,36 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     });
     return true; // Ermöglicht die asynchrone Antwort
   }
-});
+}); // <-- HIER IST DER LISTENER KORREKT BEENDET
+
+/**
+ * Wandelt die Domain-Liste in Regex-Objekte um und speichert sie global.
+ */
+function updateDomainPatterns(domainList) {
+  // Erstellt die Regex-Liste aus dem Array
+  g_domainPatterns = Array.from(domainList).map(pattern => {
+    try {
+      return globToRegex(pattern);
+    } catch (e) {
+      console.error("Ungültiges Pattern:", pattern, e);
+      return null;
+    }
+  }).filter(Boolean); // Entfernt ungültige Einträge
+} // <-- HIER KEIN KOMMA
+
+/**
+ * Wandelt User-Eingaben (Globs) in echte Regex um.
+ * Unterstützt: 
+ * * -> Wildcard (z.B. *.redd.it)
+ * [1-9] -> Ranges (z.B. jpg[1-9])
+ */
+function globToRegex(pattern) {
+  // 1. Escape spezielle Regex-Zeichen, ABER behalte *, [, ], - für Ranges/Wildcards
+  let escaped = pattern.replace(/[.+?^${}()|\\]/g, "\\$&");
+
+  // 2. Ersetze den Wildcard-Stern * durch den Regex-Ausdruck .* (beliebig viele Zeichen)
+  escaped = escaped.replace(/\*/g, ".*");
+
+  // 3. 'i' flag sorgt dafür, dass Groß-/Kleinschreibung egal ist
+  return new RegExp(escaped, 'i');
+} // <-- ENDE DER DATEI (Ohne Klammer/Semikolon)
