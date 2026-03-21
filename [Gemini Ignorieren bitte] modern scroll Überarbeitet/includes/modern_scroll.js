@@ -125,7 +125,6 @@ async function add_ms()
 	let ms_container = document.createElement("div");
 	ms_container.id = "modern_scroll";
 	ms = ms_container.attachShadow({mode: "open"});
-	document.scrollingElement.appendChild(ms_container);
 	
 	await load_prefs();
 
@@ -146,6 +145,10 @@ async function add_ms()
 	
 	add_bars();
 	add_buttons();
+
+	// DIESE ZEILE HIER NEU EINFÜGEN:
+	document.scrollingElement.appendChild(ms_container);
+
 	add_scrollingfunctions();
 	window.addEventListener("click", check_if_element_is_scrollable, false);
 	
@@ -760,8 +763,7 @@ function resize_vbar()
 	const vbar_new_height = Math.max(Math.round(window.innerHeight/(Math.max(document.documentElement.scrollHeight,document.body.scrollHeight)/window.innerHeight)), 30+2*w.gap);
 	
 	if(vbar.offsetHeight !== vbar_new_height){
-		ms.styleSheets[0].removeRule(ms.styleSheets[0].cssRules.length-2);
-		ms.styleSheets[0].addRule(":host", "--vbar-height: " + vbar_new_height + "px;", ms.styleSheets[0].cssRules.length-1);
+		ms.host.style.setProperty("--vbar-height", vbar_new_height + "px");
 
 		show_bar("v");
 	}
@@ -787,8 +789,7 @@ function resize_hbar()
 	const hbar_new_width = Math.max(Math.round(window.innerWidth/(Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)/window.innerWidth)), 30+2*w.gap);
 	
 	if(hbar.offsetWidth !== hbar_new_width){
-		ms.styleSheets[0].removeRule(ms.styleSheets[0].cssRules.length-1);
-		ms.styleSheets[0].addRule(":host", "--hbar-width: " + hbar_new_width + "px;");
+		ms.host.style.setProperty("--hbar-width", hbar_new_width + "px");
 
 		show_bar("h");
 	}
