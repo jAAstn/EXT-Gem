@@ -4,7 +4,8 @@ let g_settings = { enabled: true, specialDomains: new Set() };
 let g_domainPatterns = []; // NEU: Speichert die kompilierten Regex-Muster
 
 // Initialisierung beim Start des Service Workers
-initialize();
+// NEU: Wir speichern das Promise, damit spätere Funktionen darauf warten können
+let initPromise = initialize();
 
 async function initialize() {
   await loadSettings();
@@ -66,8 +67,8 @@ chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
 });
 
 async function handleDownload(downloadItem, suggest) {
-  // 1. Sicherheitscheck: Sind Daten geladen? Wenn nein, schnell laden.
-  if (!g_extensionToFolder) await loadMapping();
+  // 1. Sicherheitscheck: Zwingend warten, bis Settings UND Mapping komplett geladen sind!
+  await initPromise;
   
   // 2. Ist Extension aktiv?
   if (!g_settings.enabled) {

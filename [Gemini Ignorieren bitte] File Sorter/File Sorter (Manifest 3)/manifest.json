@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Download Ordner Ersteller MV3",
-  "version": "4.4",
+  "version": "2.1",
   "description": "Automatically organizes downloaded images from selected domains.",
   "background": {
     "service_worker": "background.js"
