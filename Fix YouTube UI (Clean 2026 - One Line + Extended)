@@ -1,0 +1,67 @@
+! ================================================================
+! Title: Fix YouTube UI (Clean 2026 - One Line + Extended)
+! Description: Stable UI fixes for modern YouTube (cleaned + merged)
+! ================================================================
+! 🎬 PLAYER & LAYOUT FIXES
+! ================================
+youtube.com##yt-formatted-string.style-scope.ytd-watch-metadata:style(font-size:20px!important;line-height:28px!important;)
+!youtube.com##ytd-watch-flexy:style(--ytd-watch-flexy-sidebar-width:360px!important;)
+! Disable end cards / end screen elements
+youtube.com##.ytp-ce-element.ytp-ce-video,.ytp-ce-element.ytp-ce-channel,.ytp-ce-element.ytp-ce-website,.ytp-ce-element.ytp-ce-playlist
+! Remove "Jump Ahead" overlay button
+youtube.com##.ytp-timely-actions-overlay
+! ================================
+! 📺 RELATED / SIDEBAR CLEANUP
+! ================================
+youtube.com###related ytd-rich-item-renderer:style(width:100%!important;margin-top:8px!important;)
+youtube.com###related #dismissible.ytd-rich-grid-media:style(display:flex!important;flex-direction:row!important;)
+youtube.com###related #thumbnail.ytd-rich-grid-media:style(width:168px!important;height:94px!important;min-width:168px!important;margin-right:8px!important;)
+youtube.com###related #details.ytd-rich-grid-media:style(width:100%!important;min-width:0!important;)
+youtube.com###related #video-title:style(font-size:1.3rem!important;)
+youtube.com###related #metadata-line span:style(font-size:12px!important;)
+youtube.com###related #avatar-container:style(display:none!important;)
+! ================================
+! 🔍 SEARCH CLEANUP
+! ================================
+! Hide Shorts in search results (fixed selector)
+youtube.com##ytd-search ytd-video-renderer:has([overlay-style="SHORTS"])
+! Hide Shorts shelves (search + homepage + channels)
+!youtube.com##ytd-reel-shelf-renderer:style(display:none!important;)
+! ================================
+! 🧹 GENERAL CLEANUP
+! ================================
+youtube.com##ytd-rich-section-renderer:has(#title:has-text(For you)):style(display:none!important;)
+!youtube.com##ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]):style(display:none!important;)
+youtube.com##ytd-rich-section-renderer:has-text(People also watched):style(display:none!important;)
+! Hide Shorts in sidebar
+!youtube.com##ytd-guide-entry-renderer:has-text(Shorts):style(display:none!important;):style(display:none!important;)
+! Hide Channel's Annotations
+youtube.com##.branding-img-container
+youtube.com##.ytp-ce-channel
+youtube.com##.annotation
+! ================================
+! 🧱 GRID (5 VIDEOS PER ROW)
+! ================================
+! Core layout
+youtube.com##ytd-rich-grid-row:style(display:contents!important;)
+youtube.com###contents.ytd-rich-grid-row:style(display:contents!important;)
+youtube.com##ytd-rich-grid-renderer:style(--ytd-rich-grid-items-per-row:5!important;)
+! Fix spacing
+youtube.com##ytd-rich-item-renderer:style(margin-right:calc(var(--ytd-rich-grid-item-margin)/2)!important;margin-left:calc(var(--ytd-rich-grid-item-margin)/2)!important;)
+! Fix fonts
+youtube.com###video-title.ytd-rich-grid-media:style(font-size:1.4rem!important;line-height:2rem!important;)
+youtube.com###metadata-line.ytd-video-meta-block:style(font-size:1.2rem!important;line-height:1.8rem!important;)
+youtube.com###video-title.ytd-rich-grid-slim-media:style(font-size:1.4rem!important;line-height:2rem!important;)
+! Fix weird right-side spacing bug (kept but cleaned)
+youtube.com##ytd-browse:not([page-subtype="channels"]) ytd-rich-grid-renderer:style(padding-right:100%!important;width:100%!important;)
+! ================================
+! 🧪 OPTIONAL / LOW IMPACT
+! ================================
+! Suggestion dropdown height (may or may not apply depending on rollout)
+youtube.com##.ytSuggestionComponentSuggestion:style(height:32px!important;)
+! ================================
+! 🧪 SAFE SCRIPT HOOK
+! ================================
+!youtube.com##+js(set, yt.config_.EXPERIMENT_FLAGS.desktop_shorts_volume_controls, true)
+!youtube.com##+js(set, yt.config_.EXPERIMENT_FLAGS.web_log_connectionless_client, false)
+!youtube.com##+js(set, yt.config_.EXPERIMENT_FLAGS.networkless_request_timeout_ms, 0)
